@@ -27,7 +27,7 @@ public class StudentService {
         this.jobRoleRepository = jobRoleRepository;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public StudentProfileResponse getProfile(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));

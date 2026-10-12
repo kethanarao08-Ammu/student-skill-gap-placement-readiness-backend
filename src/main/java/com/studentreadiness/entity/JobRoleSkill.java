@@ -26,6 +26,9 @@ public class JobRoleSkill {
     @Column(name = "required_level", nullable = false)
     private int requiredLevel; // 1 to 5
 
+    @Column(name = "required_proficiency", nullable = false)
+    private int requiredProficiency; // Legacy schema compatibility
+
     @Column(name = "importance_weight", nullable = false)
     private int importanceWeight = 3; // 1 to 5
 
@@ -44,6 +47,7 @@ public class JobRoleSkill {
         this.jobRole = jobRole;
         this.skill = skill;
         this.requiredLevel = requiredLevel;
+        this.requiredProficiency = requiredLevel;
         this.importanceWeight = importanceWeight;
     }
 
@@ -77,6 +81,16 @@ public class JobRoleSkill {
 
     public void setRequiredLevel(int requiredLevel) {
         this.requiredLevel = requiredLevel;
+        this.requiredProficiency = requiredLevel;
+    }
+
+    public int getRequiredProficiency() {
+        return requiredProficiency;
+    }
+
+    public void setRequiredProficiency(int requiredProficiency) {
+        this.requiredProficiency = requiredProficiency;
+        this.requiredLevel = requiredProficiency;
     }
 
     public int getImportanceWeight() {

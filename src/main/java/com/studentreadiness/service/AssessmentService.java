@@ -24,17 +24,20 @@ public class AssessmentService {
     private final AssessmentOptionRepository optionRepository;
     private final AssessmentAttemptRepository attemptRepository;
     private final UserRepository userRepository;
+    private final StudentProfileRepository studentProfileRepository;
 
     public AssessmentService(AssessmentRepository assessmentRepository,
                              AssessmentQuestionRepository questionRepository,
                              AssessmentOptionRepository optionRepository,
                              AssessmentAttemptRepository attemptRepository,
-                             UserRepository userRepository) {
+                             UserRepository userRepository,
+                             StudentProfileRepository studentProfileRepository) {
         this.assessmentRepository = assessmentRepository;
         this.questionRepository = questionRepository;
         this.optionRepository = optionRepository;
         this.attemptRepository = attemptRepository;
         this.userRepository = userRepository;
+        this.studentProfileRepository = studentProfileRepository;
     }
 
     @Transactional(readOnly = true)
@@ -77,6 +80,8 @@ public class AssessmentService {
     public AssessmentResultResponse submitAssessment(Long userId, AssessmentSubmitRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        StudentProfile profile = studentProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
         Assessment assessment = getAssessmentById(request.getAssessmentId());
 
         List<AssessmentQuestion> questions = questionRepository.findByAssessmentId(assessment.getId());
@@ -93,6 +98,7 @@ public class AssessmentService {
 
         AssessmentAttempt attempt = new AssessmentAttempt();
         attempt.setUser(user);
+        attempt.setStudentProfile(profile);
         attempt.setAssessment(assessment);
         attempt.setTotalQuestions(questions.size());
 
@@ -146,6 +152,11 @@ public class AssessmentService {
         attempt.setCorrectAnswers(correctCount);
         attempt.setScorePercentage(BigDecimal.valueOf(scorePercentage));
         attempt.setReadinessCategory(readinessCategory.getDisplayName());
+        attempt.setTotalScore(correctCount);
+        attempt.setMaxScore(questions.size());
+        attempt.setPercentage(BigDecimal.valueOf(scorePercentage));
+        attempt.setReadinessLevel(readinessCategory.getDisplayName());
+        attempt.setPassed(scorePercentage >= 80.0);
         attempt.setResponses(responses);
 
         AssessmentAttempt savedAttempt = attemptRepository.save(attempt);

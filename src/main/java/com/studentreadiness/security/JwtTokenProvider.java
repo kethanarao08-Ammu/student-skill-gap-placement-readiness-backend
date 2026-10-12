@@ -73,6 +73,8 @@ public class JwtTokenProvider {
             logger.error("Expired JWT token");
         } catch (UnsupportedJwtException ex) {
             logger.error("Unsupported JWT token");
+        } catch (JwtException ex) {
+            logger.debug("Invalid JWT token: {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {
             logger.error("JWT claims string is empty");
         }

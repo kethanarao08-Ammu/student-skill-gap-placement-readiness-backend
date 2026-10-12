@@ -18,6 +18,9 @@ public class StudentProfile {
     @JsonIgnore
     private User user;
 
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String fullName;
+
     @Column(length = 150)
     private String college;
 
@@ -65,6 +68,7 @@ public class StudentProfile {
 
     public StudentProfile(User user) {
         this.user = user;
+        this.fullName = user != null ? user.getFullName() : null;
     }
 
     public Long getId() {
@@ -81,6 +85,17 @@ public class StudentProfile {
 
     public void setUser(User user) {
         this.user = user;
+        if (user != null) {
+            this.fullName = user.getFullName();
+        }
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getCollege() {

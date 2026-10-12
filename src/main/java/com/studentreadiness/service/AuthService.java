@@ -17,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
+
 @Service
 public class AuthService {
 
@@ -40,12 +42,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail().toLowerCase())) {
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmail(email)) {
             throw new DuplicateResourceException("An account with email '" + request.getEmail() + "' already exists.");
         }
 
         User user = new User();
-        user.setEmail(request.getEmail().toLowerCase().trim());
+        user.setEmail(email);
         user.setFullName(request.getFullName().trim());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.ROLE_STUDENT);
@@ -53,17 +56,22 @@ public class AuthService {
 
         User savedUser = userRepository.save(user);
 
-        // Create an empty profile for the student automatically
         StudentProfile profile = new StudentProfile(savedUser);
+        profile.setCollege(trimToNull(request.getCollege()));
+        profile.setDegree(trimToNull(request.getDegree()));
+        profile.setBranch(trimToNull(request.getBranch()));
+        profile.setGraduationYear(request.getGraduationYear());
         profileRepository.save(profile);
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail().toLowerCase(), request.getPassword())
+            new UsernamePasswordAuthenticationToken(email, request.getPassword())
         );
 
         String token = tokenProvider.generateToken(authentication);
 
-        return new AuthResponse(token, savedUser.getEmail(), savedUser.getFullName(), savedUser.getRole().name());
+        AuthResponse response = new AuthResponse(token, savedUser.getEmail(), savedUser.getFullName(), savedUser.getRole().name());
+        response.setId(savedUser.getId());
+        return response;
     }
 
     public AuthResponse login(LoginRequest request) {
@@ -76,6 +84,16 @@ public class AuthService {
         User user = userRepository.findByEmail(request.getEmail().toLowerCase())
                 .orElseThrow();
 
-        return new AuthResponse(token, user.getEmail(), user.getFullName(), user.getRole().name());
+        AuthResponse response = new AuthResponse(token, user.getEmail(), user.getFullName(), user.getRole().name());
+        response.setId(user.getId());
+        return response;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

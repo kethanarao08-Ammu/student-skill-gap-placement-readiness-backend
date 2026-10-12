@@ -2,6 +2,8 @@ package com.studentreadiness.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,6 +17,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private Map<String, Object> buildErrorBody(int status, String error, String message, String path) {
         Map<String, Object> body = new HashMap<>();
@@ -90,6 +94,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGlobalException(
             Exception ex, WebRequest request) {
+        logger.error("Unhandled exception while processing {}", request.getDescription(false), ex);
         Map<String, Object> body = buildErrorBody(500, "Internal Server Error",
                 "An unexpected error occurred. Please try again later.",
                 request.getDescription(false).replace("uri=", ""));

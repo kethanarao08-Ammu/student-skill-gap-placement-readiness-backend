@@ -2,10 +2,12 @@ package com.studentreadiness.service;
 
 import com.studentreadiness.dto.ProjectRequest;
 import com.studentreadiness.dto.ProjectResponse;
+import com.studentreadiness.entity.StudentProfile;
 import com.studentreadiness.entity.StudentProject;
 import com.studentreadiness.entity.User;
 import com.studentreadiness.exception.AccessDeniedException;
 import com.studentreadiness.exception.ResourceNotFoundException;
+import com.studentreadiness.repository.StudentProfileRepository;
 import com.studentreadiness.repository.StudentProjectRepository;
 import com.studentreadiness.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -19,10 +21,14 @@ public class ProjectService {
 
     private final StudentProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final StudentProfileRepository profileRepository;
 
-    public ProjectService(StudentProjectRepository projectRepository, UserRepository userRepository) {
+    public ProjectService(StudentProjectRepository projectRepository,
+                          UserRepository userRepository,
+                          StudentProfileRepository profileRepository) {
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
     }
 
     @Transactional(readOnly = true)
@@ -37,12 +43,15 @@ public class ProjectService {
     public ProjectResponse createProject(Long userId, ProjectRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        StudentProfile profile = profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
 
         StudentProject project = new StudentProject();
         project.setUser(user);
+        project.setStudentProfile(profile);
         project.setTitle(request.getTitle());
-        project.setDescription(request.getDescription());
-        project.setTechnologies(request.getTechnologies());
+        project.setDescription(request.getDescription() == null ? "" : request.getDescription());
+        project.setTechnologies(request.getTechnologies() == null ? "" : request.getTechnologies());
         project.setProjectUrl(request.getProjectUrl());
         project.setGithubUrl(request.getGithubUrl());
         project.setStartDate(request.getStartDate());
@@ -62,8 +71,8 @@ public class ProjectService {
         }
 
         project.setTitle(request.getTitle());
-        project.setDescription(request.getDescription());
-        project.setTechnologies(request.getTechnologies());
+        project.setDescription(request.getDescription() == null ? "" : request.getDescription());
+        project.setTechnologies(request.getTechnologies() == null ? "" : request.getTechnologies());
         project.setProjectUrl(request.getProjectUrl());
         project.setGithubUrl(request.getGithubUrl());
         project.setStartDate(request.getStartDate());

@@ -3,12 +3,14 @@ package com.studentreadiness.service;
 import com.studentreadiness.dto.StudentSkillRequest;
 import com.studentreadiness.dto.StudentSkillResponse;
 import com.studentreadiness.entity.Skill;
+import com.studentreadiness.entity.StudentProfile;
 import com.studentreadiness.entity.StudentSkill;
 import com.studentreadiness.entity.User;
 import com.studentreadiness.enums.SkillCategory;
 import com.studentreadiness.exception.DuplicateResourceException;
 import com.studentreadiness.exception.ResourceNotFoundException;
 import com.studentreadiness.repository.SkillRepository;
+import com.studentreadiness.repository.StudentProfileRepository;
 import com.studentreadiness.repository.StudentSkillRepository;
 import com.studentreadiness.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -23,13 +25,16 @@ public class SkillService {
     private final SkillRepository skillRepository;
     private final StudentSkillRepository studentSkillRepository;
     private final UserRepository userRepository;
+    private final StudentProfileRepository studentProfileRepository;
 
     public SkillService(SkillRepository skillRepository,
                         StudentSkillRepository studentSkillRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        StudentProfileRepository studentProfileRepository) {
         this.skillRepository = skillRepository;
         this.studentSkillRepository = studentSkillRepository;
         this.userRepository = userRepository;
+        this.studentProfileRepository = studentProfileRepository;
     }
 
     @Transactional(readOnly = true)
@@ -87,10 +92,12 @@ public class SkillService {
     public StudentSkillResponse addOrUpdateStudentSkill(Long userId, StudentSkillRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        StudentProfile profile = studentProfileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
         Skill skill = getSkillById(request.getSkillId());
 
         StudentSkill studentSkill = studentSkillRepository.findByUserAndSkill(user, skill)
-                .orElseGet(() -> new StudentSkill(user, skill, request.getProficiencyLevel()));
+                .orElseGet(() -> new StudentSkill(user, profile, skill, request.getProficiencyLevel()));
 
         studentSkill.setProficiencyLevel(request.getProficiencyLevel());
         StudentSkill saved = studentSkillRepository.save(studentSkill);

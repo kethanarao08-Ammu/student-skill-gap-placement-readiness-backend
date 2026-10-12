@@ -111,4 +111,24 @@ class SkillGapServiceTest {
         assertEquals(3, response.getMissingSkillsCount());
         assertEquals(0, response.getMatchedSkillsCount());
     }
+
+    @Test
+    void fallsBackToLegacyRequiredProficiencyWhenRequiredLevelIsZero() {
+        Long userId = 2L;
+        Long roleId = 1L;
+        JobRoleSkill legacyRequirement = mock(JobRoleSkill.class);
+        when(legacyRequirement.getSkill()).thenReturn(javaSkill);
+        when(legacyRequirement.getRequiredLevel()).thenReturn(0);
+        when(legacyRequirement.getRequiredProficiency()).thenReturn(4);
+        when(legacyRequirement.getImportanceWeight()).thenReturn(5);
+        javaBackendRole.setRequiredSkills(List.of(legacyRequirement));
+        when(jobRoleRepository.findById(roleId)).thenReturn(Optional.of(javaBackendRole));
+        when(studentSkillRepository.findByUserId(userId)).thenReturn(List.of());
+
+        SkillGapResponse response = skillGapService.calculateSkillGap(userId, roleId);
+
+        assertEquals(1, response.getMissingSkillsCount());
+        assertEquals(4, response.getMissingSkills().get(0).getRequiredLevel());
+        assertEquals(4, response.getMissingSkills().get(0).getGap());
+    }
 }

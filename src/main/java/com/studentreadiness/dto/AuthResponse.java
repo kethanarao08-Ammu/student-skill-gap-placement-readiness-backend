@@ -1,6 +1,7 @@
 package com.studentreadiness.dto;
 
 public class AuthResponse {
+    private Long id;
     private String accessToken;
     private String tokenType = "Bearer";
     private String email;
@@ -13,6 +14,9 @@ public class AuthResponse {
         this.fullName = fullName;
         this.role = role;
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
     public String getAccessToken() { return accessToken; }
     public void setAccessToken(String accessToken) { this.accessToken = accessToken; }

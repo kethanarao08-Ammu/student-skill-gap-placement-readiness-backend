@@ -3,10 +3,12 @@ package com.studentreadiness.service;
 import com.studentreadiness.dto.CertificationRequest;
 import com.studentreadiness.dto.CertificationResponse;
 import com.studentreadiness.entity.Certification;
+import com.studentreadiness.entity.StudentProfile;
 import com.studentreadiness.entity.User;
 import com.studentreadiness.exception.AccessDeniedException;
 import com.studentreadiness.exception.ResourceNotFoundException;
 import com.studentreadiness.repository.CertificationRepository;
+import com.studentreadiness.repository.StudentProfileRepository;
 import com.studentreadiness.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,10 +21,14 @@ public class CertificationService {
 
     private final CertificationRepository certificationRepository;
     private final UserRepository userRepository;
+    private final StudentProfileRepository profileRepository;
 
-    public CertificationService(CertificationRepository certificationRepository, UserRepository userRepository) {
+    public CertificationService(CertificationRepository certificationRepository,
+                                 UserRepository userRepository,
+                                 StudentProfileRepository profileRepository) {
         this.certificationRepository = certificationRepository;
         this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
     }
 
     @Transactional(readOnly = true)
@@ -37,9 +43,12 @@ public class CertificationService {
     public CertificationResponse createCertification(Long userId, CertificationRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        StudentProfile profile = profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
 
         Certification cert = new Certification();
         cert.setUser(user);
+        cert.setStudentProfile(profile);
         cert.setTitle(request.getTitle());
         cert.setIssuingOrganization(request.getIssuingOrganization());
         cert.setIssueDate(request.getIssueDate());

@@ -26,6 +26,9 @@ public class LearningResource {
     @Column(name = "resource_type", nullable = false, length = 50)
     private String resourceType = "COURSE";
 
+    @Column(nullable = false, length = 100)
+    private String platform = "Other";
+
     @Column(name = "estimated_duration", nullable = false, length = 50)
     private String estimatedDuration;
 
@@ -92,6 +95,14 @@ public class LearningResource {
 
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
+    }
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
     }
 
     public String getEstimatedDuration() {

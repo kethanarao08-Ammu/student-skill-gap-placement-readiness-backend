@@ -19,6 +19,9 @@ public class JobRole {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(nullable = false, length = 50)
+    private String category = "GENERAL";
+
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
@@ -35,6 +38,9 @@ public class JobRole {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+        if (this.category == null || this.category.isBlank()) {
+            this.category = "GENERAL";
+        }
     }
 
     @PreUpdate
@@ -74,6 +80,14 @@ public class JobRole {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public boolean isActive() {

@@ -1,5 +1,6 @@
 package com.studentreadiness.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ public class Assessment {
     private boolean active = true;
 
     @OneToMany(mappedBy = "assessment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<AssessmentQuestion> questions = new ArrayList<>();
 
     @Column(name = "created_at", updatable = false)

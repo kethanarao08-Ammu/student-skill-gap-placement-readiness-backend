@@ -54,11 +54,12 @@ public class DashboardService {
         this.learningPathService = learningPathService;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public DashboardSummaryResponse getDashboardSummary(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
 
+        studentService.getProfile(userId);
         StudentProfile profile = profileRepository.findByUserId(userId).orElse(null);
         JobRole targetRole = profile != null ? profile.getTargetJobRole() : null;
 
@@ -77,35 +78,27 @@ public class DashboardService {
         }
 
         // 3. Skill Gap & Readiness
-        try {
-            SkillGapResponse gap = skillGapService.calculateSkillGap(userId, targetRole != null ? targetRole.getId() : null);
-            summary.setSkillMatchPercentage(gap.getWeightedMatchPercentage());
+        SkillGapResponse gap = skillGapService.calculateSkillGap(userId, targetRole != null ? targetRole.getId() : null);
+        summary.setSkillMatchPercentage(gap.getWeightedMatchPercentage());
 
-            ReadinessScoreResponse readiness = readinessService.calculateReadiness(userId, targetRole != null ? targetRole.getId() : null);
-            summary.setOverallReadinessScore(readiness.getOverallReadinessScore());
-            summary.setReadinessCategory(readiness.getReadinessCategory());
+        ReadinessScoreResponse readiness = readinessService.calculateReadiness(userId, targetRole != null ? targetRole.getId() : null);
+        summary.setOverallReadinessScore(readiness.getOverallReadinessScore());
+        summary.setReadinessCategory(readiness.getReadinessCategory());
 
-            // Top skill gaps (up to 3)
-            List<Map<String, Object>> topGaps = gap.getHighPriorityGaps().stream()
-                    .limit(3)
-                    .map(item -> {
-                        Map<String, Object> map = new LinkedHashMap<>();
-                        map.put("skillName", item.getSkillName());
-                        map.put("category", item.getSkillCategory());
-                        map.put("currentLevel", item.getCurrentLevel());
-                        map.put("requiredLevel", item.getRequiredLevel());
-                        map.put("gap", item.getGap());
-                        map.put("importanceWeight", item.getImportanceWeight());
-                        return map;
-                    })
-                    .collect(Collectors.toList());
-            summary.setTopSkillGaps(topGaps);
-        } catch (Exception e) {
-            summary.setSkillMatchPercentage(0.0);
-            summary.setOverallReadinessScore(0.0);
-            summary.setReadinessCategory("Needs Strong Improvement");
-            summary.setTopSkillGaps(Collections.emptyList());
-        }
+        List<Map<String, Object>> topGaps = gap.getHighPriorityGaps().stream()
+                .limit(3)
+                .map(item -> {
+                    Map<String, Object> map = new LinkedHashMap<>();
+                    map.put("skillName", item.getSkillName());
+                    map.put("category", item.getSkillCategory());
+                    map.put("currentLevel", item.getCurrentLevel());
+                    map.put("requiredLevel", item.getRequiredLevel());
+                    map.put("gap", item.getGap());
+                    map.put("importanceWeight", item.getImportanceWeight());
+                    return map;
+                })
+                .collect(Collectors.toList());
+        summary.setTopSkillGaps(topGaps);
 
         // 4. Assessment History
         Optional<AssessmentAttempt> latestAttempt = attemptRepository.findTopByUserIdOrderByAttemptedAtDesc(userId);

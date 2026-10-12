@@ -24,25 +24,30 @@ public class LearningPathService {
     private final JobRoleRepository jobRoleRepository;
     private final SkillRepository skillRepository;
     private final UserRepository userRepository;
+    private final StudentProfileRepository profileRepository;
 
     public LearningPathService(LearningRecommendationRepository recommendationRepository,
                                LearningResourceRepository resourceRepository,
                                SkillGapService skillGapService,
                                JobRoleRepository jobRoleRepository,
                                SkillRepository skillRepository,
-                               UserRepository userRepository) {
+                               UserRepository userRepository,
+                               StudentProfileRepository profileRepository) {
         this.recommendationRepository = recommendationRepository;
         this.resourceRepository = resourceRepository;
         this.skillGapService = skillGapService;
         this.jobRoleRepository = jobRoleRepository;
         this.skillRepository = skillRepository;
         this.userRepository = userRepository;
+        this.profileRepository = profileRepository;
     }
 
     @Transactional
     public List<LearningRecommendationResponse> generateRecommendations(Long userId, Long jobRoleId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+        StudentProfile profile = profileRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("StudentProfile", "userId", userId));
 
         SkillGapResponse gap = skillGapService.calculateSkillGap(userId, jobRoleId);
         JobRole role = jobRoleRepository.findById(gap.getJobRoleId())
@@ -105,6 +110,7 @@ public class LearningPathService {
 
             LearningRecommendation rec = new LearningRecommendation(
                     user,
+                    profile,
                     role,
                     skill,
                     priority,

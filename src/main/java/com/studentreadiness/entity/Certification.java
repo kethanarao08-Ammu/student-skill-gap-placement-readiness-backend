@@ -18,13 +18,21 @@ public class Certification {
     @JsonIgnore
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_profile_id", nullable = false)
+    @JsonIgnore
+    private StudentProfile studentProfile;
+
+    @Column(name = "name", nullable = false, length = 150)
+    private String name;
+
     @Column(nullable = false, length = 150)
     private String title;
 
     @Column(name = "issuing_organization", nullable = false, length = 150)
     private String issuingOrganization;
 
-    @Column(name = "issue_date")
+    @Column(name = "issue_date", nullable = false)
     private LocalDate issueDate;
 
     @Column(name = "credential_url", length = 255)
@@ -46,6 +54,7 @@ public class Certification {
 
     public Certification(User user, String title, String issuingOrganization, LocalDate issueDate, String credentialUrl, String certificateId) {
         this.user = user;
+        this.name = title;
         this.title = title;
         this.issuingOrganization = issuingOrganization;
         this.issueDate = issueDate;
@@ -69,12 +78,29 @@ public class Certification {
         this.user = user;
     }
 
+    public StudentProfile getStudentProfile() {
+        return studentProfile;
+    }
+
+    public void setStudentProfile(StudentProfile studentProfile) {
+        this.studentProfile = studentProfile;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+        this.name = title;
     }
 
     public String getIssuingOrganization() {

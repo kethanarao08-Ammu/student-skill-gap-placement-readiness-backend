@@ -19,6 +19,11 @@ public class StudentSkill {
     @JsonIgnore
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_profile_id", nullable = false)
+    @JsonIgnore
+    private StudentProfile studentProfile;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "skill_id", nullable = false)
     private Skill skill;
@@ -52,6 +57,13 @@ public class StudentSkill {
         this.proficiencyLevel = proficiencyLevel;
     }
 
+    public StudentSkill(User user, StudentProfile studentProfile, Skill skill, int proficiencyLevel) {
+        this.user = user;
+        this.studentProfile = studentProfile;
+        this.skill = skill;
+        this.proficiencyLevel = proficiencyLevel;
+    }
+
     public Long getId() {
         return id;
     }
@@ -66,6 +78,14 @@ public class StudentSkill {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public StudentProfile getStudentProfile() {
+        return studentProfile;
+    }
+
+    public void setStudentProfile(StudentProfile studentProfile) {
+        this.studentProfile = studentProfile;
     }
 
     public Skill getSkill() {

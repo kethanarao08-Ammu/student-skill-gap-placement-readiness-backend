@@ -20,6 +20,11 @@ public class LearningRecommendation {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_profile_id", nullable = false)
+    @JsonIgnore
+    private StudentProfile studentProfile;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_role_id")
     private JobRole jobRole;
 
@@ -70,8 +75,9 @@ public class LearningRecommendation {
     public LearningRecommendation() {
     }
 
-    public LearningRecommendation(User user, JobRole jobRole, Skill skill, PriorityLevel priority, String reason, String suggestedTopic, String resourceTitle, String resourceUrl, String estimatedDuration, LearningStatus status) {
+    public LearningRecommendation(User user, StudentProfile studentProfile, JobRole jobRole, Skill skill, PriorityLevel priority, String reason, String suggestedTopic, String resourceTitle, String resourceUrl, String estimatedDuration, LearningStatus status) {
         this.user = user;
+        this.studentProfile = studentProfile;
         this.jobRole = jobRole;
         this.skill = skill;
         this.priority = priority;
@@ -97,6 +103,14 @@ public class LearningRecommendation {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public StudentProfile getStudentProfile() {
+        return studentProfile;
+    }
+
+    public void setStudentProfile(StudentProfile studentProfile) {
+        this.studentProfile = studentProfile;
     }
 
     public JobRole getJobRole() {

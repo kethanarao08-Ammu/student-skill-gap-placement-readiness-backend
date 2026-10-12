@@ -20,9 +20,29 @@ public class AssessmentAttempt {
     @JsonIgnore
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_profile_id", nullable = false)
+    @JsonIgnore
+    private StudentProfile studentProfile;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "assessment_id", nullable = false)
     private Assessment assessment;
+
+    @Column(name = "total_score", nullable = false)
+    private int totalScore;
+
+    @Column(name = "max_score", nullable = false)
+    private int maxScore;
+
+    @Column(name = "percentage", nullable = false, precision = 5, scale = 2)
+    private BigDecimal percentage;
+
+    @Column(name = "readiness_level", nullable = false, length = 50)
+    private String readinessLevel;
+
+    @Column(nullable = false)
+    private boolean passed;
 
     @Column(name = "score_percentage", nullable = false, precision = 5, scale = 2)
     private BigDecimal scorePercentage;
@@ -75,12 +95,60 @@ public class AssessmentAttempt {
         this.user = user;
     }
 
+    public StudentProfile getStudentProfile() {
+        return studentProfile;
+    }
+
+    public void setStudentProfile(StudentProfile studentProfile) {
+        this.studentProfile = studentProfile;
+    }
+
     public Assessment getAssessment() {
         return assessment;
     }
 
     public void setAssessment(Assessment assessment) {
         this.assessment = assessment;
+    }
+
+    public int getTotalScore() {
+        return totalScore;
+    }
+
+    public void setTotalScore(int totalScore) {
+        this.totalScore = totalScore;
+    }
+
+    public int getMaxScore() {
+        return maxScore;
+    }
+
+    public void setMaxScore(int maxScore) {
+        this.maxScore = maxScore;
+    }
+
+    public BigDecimal getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(BigDecimal percentage) {
+        this.percentage = percentage;
+    }
+
+    public String getReadinessLevel() {
+        return readinessLevel;
+    }
+
+    public void setReadinessLevel(String readinessLevel) {
+        this.readinessLevel = readinessLevel;
+    }
+
+    public boolean isPassed() {
+        return passed;
+    }
+
+    public void setPassed(boolean passed) {
+        this.passed = passed;
     }
 
     public BigDecimal getScorePercentage() {

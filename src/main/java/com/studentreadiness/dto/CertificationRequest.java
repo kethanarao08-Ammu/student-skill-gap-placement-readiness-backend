@@ -13,6 +13,7 @@ public class CertificationRequest {
     @Size(max = 150, message = "Organization name must not exceed 150 characters")
     private String issuingOrganization;
 
+    @NotNull(message = "Issue date is required")
     private LocalDate issueDate;
 
     @Size(max = 255, message = "Credential URL must not exceed 255 characters")

@@ -18,14 +18,22 @@ public class StudentProject {
     @JsonIgnore
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_profile_id", nullable = false)
+    @JsonIgnore
+    private StudentProfile studentProfile;
+
     @Column(nullable = false, length = 150)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
     @Column(length = 255)
     private String technologies;
+
+    @Column(name = "technologies_used", nullable = false, length = 255)
+    private String technologiesUsed;
 
     @Column(name = "project_url", length = 255)
     private String projectUrl;
@@ -45,6 +53,15 @@ public class StudentProject {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.description == null) {
+            this.description = "";
+        }
+        if (this.technologies == null) {
+            this.technologies = "";
+        }
+        if (this.technologiesUsed == null) {
+            this.technologiesUsed = this.technologies;
+        }
     }
 
     public StudentProject() {
@@ -55,6 +72,7 @@ public class StudentProject {
         this.title = title;
         this.description = description;
         this.technologies = technologies;
+        this.technologiesUsed = technologies;
         this.projectUrl = projectUrl;
         this.githubUrl = githubUrl;
         this.startDate = startDate;
@@ -75,6 +93,14 @@ public class StudentProject {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public StudentProfile getStudentProfile() {
+        return studentProfile;
+    }
+
+    public void setStudentProfile(StudentProfile studentProfile) {
+        this.studentProfile = studentProfile;
     }
 
     public String getTitle() {
@@ -99,6 +125,16 @@ public class StudentProject {
 
     public void setTechnologies(String technologies) {
         this.technologies = technologies;
+        this.technologiesUsed = technologies;
+    }
+
+    public String getTechnologiesUsed() {
+        return technologiesUsed;
+    }
+
+    public void setTechnologiesUsed(String technologiesUsed) {
+        this.technologiesUsed = technologiesUsed;
+        this.technologies = technologiesUsed;
     }
 
     public String getProjectUrl() {

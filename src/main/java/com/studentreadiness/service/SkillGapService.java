@@ -70,7 +70,9 @@ public class SkillGapService {
 
         for (JobRoleSkill req : requiredSkills) {
             Skill skill = req.getSkill();
-            int requiredLevel = req.getRequiredLevel();
+            int requiredLevel = req.getRequiredLevel() > 0
+                    ? req.getRequiredLevel()
+                    : req.getRequiredProficiency();
             int weight = req.getImportanceWeight();
             int currentLevel = studentSkillMap.getOrDefault(skill.getId(), 0);
             int gap = Math.max(0, requiredLevel - currentLevel);

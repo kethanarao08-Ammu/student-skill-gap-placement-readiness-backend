@@ -27,6 +27,9 @@ public class AssessmentResponse {
     @Column(name = "is_correct", nullable = false)
     private boolean correct;
 
+    @Column(name = "marks_awarded", nullable = false)
+    private int marksAwarded;
+
     public AssessmentResponse() {
     }
 
@@ -35,6 +38,7 @@ public class AssessmentResponse {
         this.question = question;
         this.selectedOption = selectedOption;
         this.correct = correct;
+        this.marksAwarded = correct ? 1 : 0;
     }
 
     public Long getId() {
@@ -75,5 +79,14 @@ public class AssessmentResponse {
 
     public void setCorrect(boolean correct) {
         this.correct = correct;
+        this.marksAwarded = correct ? 1 : 0;
+    }
+
+    public int getMarksAwarded() {
+        return marksAwarded;
+    }
+
+    public void setMarksAwarded(int marksAwarded) {
+        this.marksAwarded = marksAwarded;
     }
 }
