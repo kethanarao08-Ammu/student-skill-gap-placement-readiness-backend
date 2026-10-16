@@ -1,0 +1,14 @@
+﻿# Normalize line endings for cross-platform Java/Maven projects
+* text=auto eol=lf
+*.java text eol=lf
+*.xml text eol=lf
+*.properties text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sql text eol=lf
+*.sh text eol=lf
+*.bash text eol=lf
+*.md text eol=lf
+Dockerfile text eol=lf
+*.cmd text eol=crlf
+*.bat text eol=crlf

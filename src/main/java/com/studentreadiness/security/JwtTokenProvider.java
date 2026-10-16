@@ -2,6 +2,7 @@ package com.studentreadiness.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.DecodingException;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,22 +11,47 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Component
 public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
+    private final SecretKey signingKey;
+    private final long jwtExpirationMs;
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    public JwtTokenProvider(@Value("${jwt.secret}") String jwtSecret,
+                            @Value("${jwt.expiration-ms}") long jwtExpirationMs) {
+        this.signingKey = createSigningKey(jwtSecret);
+        this.jwtExpirationMs = jwtExpirationMs;
+    }
 
-    @Value("${jwt.expiration-ms}")
-    private long jwtExpirationMs;
+    private static SecretKey createSigningKey(String jwtSecret) {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            throw new IllegalArgumentException("JWT_SECRET must be provided and contain at least 256 bits");
+        }
 
-    private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        byte[] rawKeyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(jwtSecret);
+        } catch (DecodingException ex) {
+            keyBytes = rawKeyBytes;
+        }
+
+        if (keyBytes.length < 32 && rawKeyBytes.length >= 32) {
+            keyBytes = rawKeyBytes;
+        }
+        if (keyBytes.length < 32) {
+            throw new IllegalArgumentException("JWT_SECRET must be valid Base64 or at least 32 UTF-8 bytes");
+        }
+
+        try {
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("JWT_SECRET is not a valid HMAC signing key", ex);
+        }
     }
 
     public String generateToken(Authentication authentication) {
@@ -38,7 +64,7 @@ public class JwtTokenProvider {
                 .claim("role", userPrincipal.getUser().getRole().name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(getSigningKey())
+                .signWith(signingKey)
                 .compact();
     }
 
@@ -47,13 +73,13 @@ public class JwtTokenProvider {
                 .subject(email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + jwtExpirationMs))
-                .signWith(getSigningKey())
+                .signWith(signingKey)
                 .compact();
     }
 
     public String getEmailFromToken(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
+                .verifyWith(signingKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
@@ -63,7 +89,7 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
-                    .verifyWith(getSigningKey())
+                    .verifyWith(signingKey)
                     .build()
                     .parseSignedClaims(token);
             return true;

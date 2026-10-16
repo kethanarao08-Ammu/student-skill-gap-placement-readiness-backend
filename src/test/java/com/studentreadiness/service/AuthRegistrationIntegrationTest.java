@@ -8,6 +8,7 @@ import com.studentreadiness.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ActiveProfiles("test")
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:registration-test;DB_CLOSE_DELAY=-1;MODE=MySQL",
         "spring.datasource.driver-class-name=org.h2.Driver",

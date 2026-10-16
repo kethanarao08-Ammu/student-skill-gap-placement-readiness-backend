@@ -11,8 +11,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 @Component
+@Profile("dev")
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataInitializer.class);
@@ -41,48 +43,56 @@ public class DataInitializer implements CommandLineRunner {
                     repairedRoleRequirements);
         }
 
-        // Ensure admin account exists with valid BCrypt password
-        userRepository.findByEmail("admin@skillgap.edu").ifPresentOrElse(
-                admin -> {
-                    // Update password to ensure valid BCrypt hash for "Admin@123"
-                    admin.setPassword(passwordEncoder.encode("Admin@123"));
-                    admin.setEnabled(true);
-                    userRepository.save(admin);
-                    logger.info("Updated password for admin@skillgap.edu");
-                },
-                () -> {
-                    User admin = new User(
-                            "admin@skillgap.edu",
-                            passwordEncoder.encode("Admin@123"),
-                            "Placement Director Admin",
-                            Role.ROLE_ADMIN
-                    );
-                    userRepository.save(admin);
-                    logger.info("Created default admin user admin@skillgap.edu");
-                }
+        ensureDefaultUser(
+                "admin@skillgap.edu",
+                "Admin@123",
+                "Placement Director Admin",
+                Role.ROLE_ADMIN
         );
 
-        // Ensure student account exists with valid BCrypt password
-        userRepository.findByEmail("student@skillgap.edu").ifPresentOrElse(
-                student -> {
-                    student.setPassword(passwordEncoder.encode("Student@123"));
-                    student.setEnabled(true);
-                    User savedStudent = userRepository.save(student);
-                    ensureStudentProfile(savedStudent);
-                    logger.info("Updated password for student@skillgap.edu");
+        ensureDefaultUser(
+                "student@skillgap.edu",
+                "Student@123",
+                "Alex Sharma",
+                Role.ROLE_STUDENT
+        );
+    }
+
+    private void ensureDefaultUser(String email, String rawPassword, String fullName, Role role) {
+        userRepository.findByEmail(email).ifPresentOrElse(
+                user -> {
+                    user.setEnabled(true);
+                    if (shouldRefreshDefaultPassword(user, rawPassword)) {
+                        user.setPassword(passwordEncoder.encode(rawPassword));
+                        logger.info("Reset demo password for {}", email);
+                    }
+                    userRepository.save(user);
+                    if (Role.ROLE_STUDENT.equals(role)) {
+                        ensureStudentProfile(user);
+                    }
                 },
                 () -> {
-                    User student = new User(
-                            "student@skillgap.edu",
-                            passwordEncoder.encode("Student@123"),
-                            "Alex Sharma",
-                            Role.ROLE_STUDENT
-                    );
-                    User savedStudent = userRepository.save(student);
-                    ensureStudentProfile(savedStudent);
-                    logger.info("Created default student user student@skillgap.edu");
+                    User user = new User(email, passwordEncoder.encode(rawPassword), fullName, role);
+                    User savedUser = userRepository.save(user);
+                    if (Role.ROLE_STUDENT.equals(role)) {
+                        ensureStudentProfile(savedUser);
+                    }
+                    logger.info("Created default {} user {}", role.name(), email);
                 }
         );
+    }
+
+    private boolean shouldRefreshDefaultPassword(User user, String rawPassword) {
+        String encodedPassword = user.getPassword();
+        if (encodedPassword == null || encodedPassword.isBlank()) {
+            return true;
+        }
+
+        if (encodedPassword.equals(rawPassword)) {
+            return true;
+        }
+
+        return !passwordEncoder.matches(rawPassword, encodedPassword);
     }
 
     private void ensureStudentProfile(User student) {
