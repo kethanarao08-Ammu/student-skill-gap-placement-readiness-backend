@@ -28,16 +28,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final String DEPLOYED_FRONTEND_ORIGIN =
+            "https://student-skill-gap-placement-readine.vercel.app";
+
     private final CustomUserDetailsService userDetailsService;
     private final JwtTokenProvider tokenProvider;
 
-    @Value("${cors.allowed-origins:http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174}")
+    @Value("${cors.allowed-origins:}")
     private String allowedOrigins;
 
     public SecurityConfig(
@@ -78,9 +82,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        List<String> origins = Arrays.stream(allowedOrigins.split(","))
+        List<String> origins = Stream.concat(
+                        Arrays.stream(allowedOrigins.split(",")),
+                        Stream.of(DEPLOYED_FRONTEND_ORIGIN))
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
+                .distinct()
                 .toList();
 
         config.setAllowedOrigins(origins);
@@ -92,7 +99,10 @@ public class SecurityConfig {
                 "OPTIONS",
                 "PATCH"
         ));
-        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type"
+        ));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L);
 
