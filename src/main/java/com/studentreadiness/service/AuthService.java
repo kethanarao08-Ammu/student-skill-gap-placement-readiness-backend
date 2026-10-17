@@ -75,13 +75,14 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail().toLowerCase(), request.getPassword())
+                new UsernamePasswordAuthenticationToken(email, request.getPassword())
         );
 
         String token = tokenProvider.generateToken(authentication);
 
-        User user = userRepository.findByEmail(request.getEmail().toLowerCase())
+        User user = userRepository.findByEmail(email)
                 .orElseThrow();
 
         AuthResponse response = new AuthResponse(token, user.getEmail(), user.getFullName(), user.getRole().name());

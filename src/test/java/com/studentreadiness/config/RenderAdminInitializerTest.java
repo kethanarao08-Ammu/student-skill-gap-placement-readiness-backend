@@ -49,7 +49,7 @@ class RenderAdminInitializerTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "email", "render-admin@example.test",
+                                "email", "RENDER-ADMIN@example.test",
                                 "password", "render-test-password-123"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.role").value("ROLE_ADMIN"))
